@@ -2,8 +2,6 @@ version: '2'
 services:
   postgredb:
     container_name: postgredb
-    env_file:
-     - ./psgr.env
     image: $DOCKER_REGISTRY/postgres
     restart: always
     volumes:
