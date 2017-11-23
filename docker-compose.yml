@@ -1,0 +1,40 @@
+version: '2'
+services:
+  registry:
+    container_name: docker_registry
+    restart: always
+    image: registry:2
+    ports:
+      - 127.0.0.1:5000:5000
+    volumes:
+      - /var/cluster-data/docker/registry:/var/lib/registry
+  registry-ui:
+   container_name: docker_registry_ui
+   image: konradkleine/docker-registry-frontend:v2
+   restart: always
+   environment:
+     VIRTUAL_HOST: '*, https://*'
+     ENV_DOCKER_REGISTRY_HOST: 'docker.ivlievy.me'
+     ENV_DOCKER_REGISTRY_PORT: 443
+     ENV_DOCKER_REGISTRY_USE_SSL: 1
+   links:
+     - registry
+   ports:
+     - 127.0.0.1:5080:80
+  postgredb:
+    container_name: postgredb
+    image: docker.ivlievy.me/postgres
+    restart: always
+    volumes:
+      - /var/cluster-data/db/postgres/:/var/lib/postgresql/data
+      - /var/cluster-data/db/postgres_ts:/data/ts
+    ports:
+      - 127.0.0.1:55432:5432
+  adminer:
+    container_name: adminer
+    image: docker.ivlievy.me/adminer
+    restart: always
+    ports:
+      - 127.0.0.1:55080:8080
+    depends_on:
+      - postgredb
