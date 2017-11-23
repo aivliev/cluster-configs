@@ -1,0 +1,23 @@
+version: '2'
+services:
+  postgredb:
+    container_name: postgredb
+    env_file:
+     - ../env/main.env
+    image: $DOCKER_REGISTRY/postgres
+    restart: always
+    volumes:
+      - ${POSTGRES_DB_FLD}:/var/lib/postgresql/data
+      - ${PSOTGRES_TS_FLD}:/data/ts
+    ports:
+      - 127.0.0.1:55432:5432
+  adminer:
+    container_name: adminer
+    env_file:
+      - ../env/main.env
+    image: ${DOCKER_REGISTRY}/adminer
+    restart: always
+    ports:
+      - 127.0.0.1:55080:8080
+    depends_on:
+      - postgredb
