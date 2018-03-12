@@ -1,9 +1,11 @@
 version: '2'
 services:
-  postgredb:
-    container_name: postgredb
-    image: $DOCKER_REGISTRY/postgres
+  postgresdb:
+    container_name: postgresdb
+    image: ${DOCKER_REGISTRY}/postgres
     restart: always
+    env_file:
+      - .env
     volumes:
       - ${POSTGRES_DB_FLD}:/var/lib/postgresql/data
       - ${POSTGRES_TS_FLD}:/data/ts
@@ -16,4 +18,42 @@ services:
     ports:
       - 127.0.0.1:55080:8080
     depends_on:
-      - postgredb
+      - postgresdb
+  keycloak-server:
+    container_name: keycloak-server
+    image: ${DOCKER_REGISTRY}/jboss/keycloak
+    restart: always
+    env_file:
+      - .env
+    environment:
+      POSTGRES_PORT_5432_TCP_ADDR: postgresdb
+    links:
+      - postgresdb:postgres
+    ports:
+      - 127.0.0.1:44080:8080
+    depends_on:
+      - postgresdb
+  plex:
+    container_name: plex
+    privileged: true
+    image: ${DOCKER_REGISTRY}/plexinc/pms-docker
+    restart: unless-stopped
+    ports:
+      - 32400:32400/tcp
+      - 3005:3005/tcp
+      - 8324:8324/tcp
+      - 32469:32469/tcp
+      - 1900:1900/udp
+      - 32410:32410/udp
+      - 32412:32412/udp
+      - 32413:32413/udp
+      - 32414:32414/udp
+    environment:
+      - TZ=Europe/Minsk
+    hostname: ${HOST_HOSTNAME}
+    volumes:
+      - ${PLEX_DB}:/config
+      - ${PLEX_TS}:/transcode
+      - ${PLEX_MEDIA}:/data
+      - /mnt:/mnt/media
+
